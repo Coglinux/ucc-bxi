@@ -120,7 +120,7 @@ ucc_tl_ucp_send_common(void *buffer, size_t msglen, ucc_memory_type_t mtype,
     ucp_tag = UCC_TL_UCP_MAKE_SEND_TAG((args->mask & UCC_COLL_ARGS_FIELD_TAG),
         task->tagged.tag, UCC_TL_TEAM_RANK(team), team->super.super.params.id,
         team->super.super.params.scope_id, team->super.super.params.scope);
-    ucs_debug("UCC TAG: %lb", ucp_tag);
+    // ucs_debug("UCC TAG: %lb", ucp_tag);
     req_param.op_attr_mask =
         UCP_OP_ATTR_FIELD_CALLBACK | UCP_OP_ATTR_FIELD_DATATYPE |
         UCP_OP_ATTR_FIELD_USER_DATA | UCP_OP_ATTR_FIELD_MEMORY_TYPE;
@@ -780,7 +780,7 @@ ucc_tl_ucp_memcpy_nb(void *dst_buffer, ucc_memory_type_t dst_mtype,
                              team->super.super.params.id,
                              team->super.super.params.scope_id,
                              team->super.super.params.scope);
-    ucs_debug("UCC TAG: %lb", ucp_tag);
+    // ucs_debug("UCC TAG: %lb", ucp_tag);
 
     // get ep
     status = ucc_tl_ucp_get_ep(team, dest_group_rank, 
