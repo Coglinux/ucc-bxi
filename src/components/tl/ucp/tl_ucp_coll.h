@@ -269,7 +269,7 @@ typedef struct ucc_tl_ucp_task {
         } alltoallv_hybrid;
         struct {
             ucc_mc_buffer_header_t *scratch_mc_header;
-            ucp_deps_param_t       *memcpy_tasks;
+            ucc_mc_buffer_header_t *copy_mc_header;
             ucc_ee_executor_task_t *etask;
             void                   *src;
             void                   *dst;

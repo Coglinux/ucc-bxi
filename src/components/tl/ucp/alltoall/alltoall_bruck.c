@@ -171,12 +171,13 @@ ucc_status_t ucc_tl_ucp_alltoall_bruck_finalize(ucc_coll_task_t *coll_task)
     ucc_tl_ucp_task_t *task = ucc_derived_of(coll_task, ucc_tl_ucp_task_t);
     ucc_status_t st, global_st;
 
-    if (task->flags & UCC_TL_UCP_TASK_FLAG_SCHED_EXPLICIT) {
-        ucc_free(task->alltoall_bruck.memcpy_tasks->deps);
-    }
-
     if (task->flags & UCC_TL_UCP_TASK_FLAG_SCHEDULED) {
         ucc_tl_ucp_delete_sched(task);
+    }
+
+    global_st = ucc_mc_free(task->alltoall_bruck.copy_mc_header);
+    if (ucc_unlikely(global_st != UCC_OK)) {
+        tl_error(UCC_TASK_LIB(task), "failed to free explicit dependencies array");
     }
     
     global_st = ucc_mc_free(task->alltoall_bruck.scratch_mc_header);
@@ -247,7 +248,7 @@ void ucc_tl_ucp_alltoall_bruck_progress(ucc_coll_task_t *coll_task)
         .deps = NULL
     };
     if (task->flags & UCC_TL_UCP_TASK_FLAG_SCHED_EXPLICIT) {
-        memcpy_tasks = *task->alltoall_bruck.memcpy_tasks;
+        memcpy_tasks.deps = PTR_OFFSET(task->alltoall_bruck.copy_mc_header, 0);
     }
     ucc_rank_t nb_mcpy = 0;
 
@@ -561,12 +562,12 @@ ucc_status_t ucc_tl_ucp_alltoall_bruck_init(ucc_base_coll_args_t *coll_args,
     }
 
     if (args->flags & UCC_COLL_ARGS_FLAG_SCHEDULE_EXPLICIT) {
-        task->alltoall_bruck.memcpy_tasks->num_deps = 0;
-        task->alltoall_bruck.memcpy_tasks->deps = ucc_malloc(((tsize+1)/2)*sizeof(ucp_sched_task_h));
-        if (ucc_unlikely(task->alltoall_bruck.memcpy_tasks->deps != NULL)) {
+        status = ucc_mc_alloc(&task->alltoall_bruck.copy_mc_header,
+                            ((tsize+1)/2)*sizeof(ucp_sched_task_h), UCC_MEMORY_TYPE_HOST);
+        if (ucc_unlikely(status != UCC_OK)) {
             tl_error(UCC_TASK_LIB(task), "failed to allocate explicit dependencies array");
             ucc_tl_ucp_coll_finalize(&task->super);
-            return UCC_ERR_NO_MEMORY;
+            return status;
         }
     }
 
