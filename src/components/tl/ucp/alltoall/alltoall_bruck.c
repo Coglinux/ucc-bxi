@@ -250,7 +250,7 @@ void ucc_tl_ucp_alltoall_bruck_progress(ucc_coll_task_t *coll_task)
         .deps = NULL
     };
     if (task->flags & UCC_TL_UCP_TASK_FLAG_SCHED_EXPLICIT) {
-        memcpy_tasks.deps = PTR_OFFSET(task->alltoall_bruck.copy_mc_header, 0);
+        memcpy_tasks.deps = PTR_OFFSET(task->alltoall_bruck.copy_mc_header->addr, 0);
     }
     ucc_rank_t nb_mcpy = 0;
 
