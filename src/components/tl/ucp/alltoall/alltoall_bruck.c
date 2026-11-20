@@ -175,10 +175,12 @@ ucc_status_t ucc_tl_ucp_alltoall_bruck_finalize(ucc_coll_task_t *coll_task)
         ucc_tl_ucp_delete_sched(task);
     }
 
-    global_st = ucc_mc_free(task->alltoall_bruck.copy_mc_header);
-    if (ucc_unlikely(global_st != UCC_OK)) {
-        tl_error(UCC_TASK_LIB(task), "failed to free explicit dependencies array");
-    }
+    // if (task->flags & UCC_TL_UCP_TASK_FLAG_SCHED_EXPLICIT) {
+        global_st = ucc_mc_free(task->alltoall_bruck.copy_mc_header);
+        if (ucc_unlikely(global_st != UCC_OK)) {
+            tl_error(UCC_TASK_LIB(task), "failed to free explicit dependencies array");
+        }
+    // }
     
     global_st = ucc_mc_free(task->alltoall_bruck.scratch_mc_header);
     if (ucc_unlikely(global_st != UCC_OK)) {
@@ -561,7 +563,7 @@ ucc_status_t ucc_tl_ucp_alltoall_bruck_init(ucc_base_coll_args_t *coll_args,
         return status;
     }
 
-    if (args->flags & UCC_COLL_ARGS_FLAG_SCHEDULE_EXPLICIT) {
+    // if (args->flags & UCC_COLL_ARGS_FLAG_SCHEDULE_EXPLICIT) {
         status = ucc_mc_alloc(&task->alltoall_bruck.copy_mc_header,
                             ((tsize+1)/2)*sizeof(ucp_sched_task_h), UCC_MEMORY_TYPE_HOST);
         if (ucc_unlikely(status != UCC_OK)) {
@@ -569,7 +571,7 @@ ucc_status_t ucc_tl_ucp_alltoall_bruck_init(ucc_base_coll_args_t *coll_args,
             ucc_tl_ucp_coll_finalize(&task->super);
             return status;
         }
-    }
+    // }
 
     if (is_bcopy) {
         task->alltoall_bruck.src =
